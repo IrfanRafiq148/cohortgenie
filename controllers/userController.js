@@ -21,6 +21,8 @@ exports.register = async (req, res) => {
             password: hashedPassword, 
             // role 
         });
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+        // res.json({ token, user });
 
         // Send welcome email with credentials
         // try {
@@ -33,6 +35,7 @@ exports.register = async (req, res) => {
 
         res.status(201).json({ 
             message: 'User created successfully.',
+            token: token,
             user: {
                 ...user.toObject(),
                 // password: generatedPassword
