@@ -10,10 +10,12 @@ require('dotenv').config();
 
 
 // router.get('/invoice', authMiddleware, quickbookController.Invoice);
-// GET /api/net-revenue?year=2024
-// GET /api/net-revenue?quarter=2&year=2025
-// GET /api/net-revenue?month=5&year=2025
-// GET /api/net-revenue?monthsBack=3
+// http://localhost:5000/api/revenue/financial-report?type=month&year=2025&month=6
+// http://localhost:5000/api/revenue/financial-report?type=quarter&year=2025&quarter=2
+// http://localhost:5000/api/revenue/financial-report?type=year&year=2025
+
+// http://localhost:5000/api/revenue/financial-report?type=year
+
 
 
 router.get('/financial-report', revenueController.getFinancialReportHandler);

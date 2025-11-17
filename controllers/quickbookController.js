@@ -142,6 +142,7 @@ exports.Customer = async (req, res) => {
             _id: cust.Id,
             displayName: cust.DisplayName,
             homeCurrency: cust.CurrencyRef?.value ?? null,
+            createTime_at_qb: cust.MetaData?.CreateTime ?? null
         }));
 
         // Prepare bulk operations for MongoDB
