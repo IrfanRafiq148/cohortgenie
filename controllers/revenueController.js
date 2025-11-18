@@ -48,9 +48,10 @@ const getDateRange = ({ month, quarter, year }) => {
  * Helper: Aggregate total from collection within date range
  */
 const getTotal = async (Model, startDate, endDate) => {
+    let realmId = "9341455667651492";
     try {
         const result = await Model.aggregate([
-            { $match: { txnDate: { $gte: startDate, $lte: endDate } } },
+            { $match: { realmId: realmId, txnDate: { $gte: startDate, $lte: endDate } } },
             { $group: { _id: null, total: { $sum: "$amount" } } },
         ]);
         return result[0]?.total || 0;
@@ -64,6 +65,7 @@ const getTotal = async (Model, startDate, endDate) => {
  * Helper: Count customers in the period
  */
 const getCustomerCount = async (Customer, startDate, endDate) => {
+    let realmId = "9341455667651492";
     try {
         const start = new Date(startDate);
         const end = new Date(endDate);
@@ -76,6 +78,7 @@ const getCustomerCount = async (Customer, startDate, endDate) => {
             },
             {
                 $match: {
+                    realmId: realmId,
                     createdAtQB: { $gte: start, $lte: end },
                 },
             },
@@ -104,20 +107,32 @@ const getCustomerCount = async (Customer, startDate, endDate) => {
  * returns n x n matrix where matrix[i][j] = round((arr[j] / arr[i]) * 100)
  * If arr[i] === 0 -> matrix[i][j] = 0 (avoid div by zero)
  */
+/**
+ * Percentage matrix where first element = 100%
+ * Each row compares all columns to arr[rowIndex]
+ * m0 = first column, m1 = first column, etc.
+ */
 const percentageMatrix = (arr) => {
     const n = arr.length;
     const matrix = Array.from({ length: n }, () => Array(n).fill(0));
 
     for (let i = 0; i < n; i++) {
-        const base = arr[i] || 0;
+        const baseValue = arr[i] || 0; // baseline = current row's month value
         for (let j = 0; j < n; j++) {
             const val = arr[j] || 0;
-            matrix[i][j] = base === 0 ? 0 : Math.round((val / base) * 100);
+            if (i === j) {
+                matrix[i][j] = 100; // always 100% on the diagonal
+            } else if (baseValue === 0) {
+                matrix[i][j] = 0;
+            } else {
+                matrix[i][j] = Math.round((val / baseValue) * 100);
+            }
         }
     }
 
     return matrix;
 };
+
 
 /**
  * Get monthly net revenue totals for a given year (returns array length 12)
@@ -127,10 +142,12 @@ const getMonthlyNetTotalsForYear = async (year, { Invoice, SalesReceipt, CreditM
     const monthlyTotals = Array(12).fill(0);
 
     // Helper to aggregate sums grouped by month
+    let realmId = "9341455667651492";
     const aggregateByMonth = async (Model) => {
         const res = await Model.aggregate([
             {
                 $match: {
+                    realmId: realmId,
                     txnDate: {
                         $gte: new Date(year, 0, 1),
                         $lte: new Date(year, 11, 31, 23, 59, 59),
@@ -195,9 +212,11 @@ const getQuarterlyNetTotalsForYear = async (year, models) => {
 const getAllYearlyNetTotals = async ({ Invoice, SalesReceipt, CreditMemo, RefundReceipt }) => {
     // helper to aggregate totals by year per model
     const aggregateByYear = async (Model) => {
+        let realmId = "9341455667651492";
         const res = await Model.aggregate([
             {
                 $project: {
+                    realmId: realmId,
                     year: { $year: "$txnDate" },
                     amount: "$amount",
                 }

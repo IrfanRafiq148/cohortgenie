@@ -89,6 +89,7 @@ exports.Invoice = async (req, res) => {
             id: invoice.Id,
             txnDate: new Date(invoice.TxnDate),
             amount: invoice.TotalAmt,
+            realmId: user.realmId,
             customerRef: invoice.CustomerRef?.value ?? null,
         }));
 
@@ -142,6 +143,7 @@ exports.Customer = async (req, res) => {
             _id: cust.Id,
             displayName: cust.DisplayName,
             homeCurrency: cust.CurrencyRef?.value ?? null,
+            realmId: user.realmId,
             createTime_at_qb: cust.MetaData?.CreateTime ?? null
         }));
 
@@ -197,6 +199,7 @@ exports.SalesReceipt = async (req, res) => {
             _id: receipt.Id,
             txnDate: receipt.TxnDate,
             amount: receipt.TotalAmt,
+            realmId: user.realmId,
             customerRef: receipt.CustomerRef?.value ?? null
         }));
 
@@ -251,6 +254,7 @@ exports.RefundReceipt = async (req, res) => {
             _id: receipt.Id,
             txnDate: receipt.TxnDate,
             amount: receipt.TotalAmt,
+            realmId: user.realmId,
             customerRef: receipt.CustomerRef?.value ?? null
         }));
 
@@ -305,6 +309,7 @@ exports.CreditMemo = async (req, res) => {
             _id: memo.Id,
             txnDate: memo.TxnDate,
             amount: memo.TotalAmt,
+            realmId: user.realmId,
             customerRef: memo.CustomerRef?.value ?? null
         }));
 
