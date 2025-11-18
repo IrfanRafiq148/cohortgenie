@@ -430,56 +430,54 @@ const getFinancialSummary = async ({ month, quarter, year, type, models }) => {
  * Trend generator — month / quarter / year view
  * Returns { type, year, trend } where trend is array of { period, netRevenue }
  */
-const getRevenueTrend = async (type, year, models) => {
-    const trend = [];
+/**
+ * Trend generator — weekly / month / quarter / year view
+ * Returns { weekly, monthly, quarterly, yearly } with netRevenue
+ */
+const getRevenueTrends = async (year, month, models) => {
+    const trends = {
+        weekly: [],
+        monthly: [],
+        quarterly: [],
+        yearly: [],
+    };
 
-    if (type === "month") {
-        for (let m = 0; m < 12; m++) {
-            const start = new Date(year, m, 1);
-            const end = new Date(year, m + 1, 0, 23, 59, 59);
+    const numericYear = parseInt(year);
 
-            const [invoiceTotal, salesReceiptTotal, creditMemoTotal, refundReceiptTotal] =
-                await Promise.all([
-                    getTotal(models.Invoice, start, end),
-                    getTotal(models.SalesReceipt, start, end),
-                    getTotal(models.CreditMemo, start, end),
-                    getTotal(models.RefundReceipt, start, end),
-                ]);
-
-            const netRevenue = invoiceTotal + salesReceiptTotal - (creditMemoTotal + refundReceiptTotal);
-            trend.push({ period: start.toLocaleString("default", { month: "short" }), netRevenue });
-        }
-    } else if (type === "quarter") {
-        for (let q = 1; q <= 4; q++) {
-            const startMonth = (q - 1) * 3;
-            const start = new Date(year, startMonth, 1);
-            const end = new Date(year, startMonth + 3, 0, 23, 59, 59);
-
-            const [invoiceTotal, salesReceiptTotal, creditMemoTotal, refundReceiptTotal] =
-                await Promise.all([
-                    getTotal(models.Invoice, start, end),
-                    getTotal(models.SalesReceipt, start, end),
-                    getTotal(models.CreditMemo, start, end),
-                    getTotal(models.RefundReceipt, start, end),
-                ]);
-
-            const netRevenue = invoiceTotal + salesReceiptTotal - (creditMemoTotal + refundReceiptTotal);
-            trend.push({ period: `Q${q}`, netRevenue });
-        }
-    } else if (type === "year") {
-        // Use complete historical data
-        const { years, totals } = await getAllYearlyNetTotals(models);
-
-        years.forEach((y, index) => {
-            trend.push({
-                period: y.toString(),
-                netRevenue: totals[index],
-            });
-        });
+    // --- Weekly trend (only if month provided) ---
+    if (month) {
+        const numericMonth = parseInt(month);
+        const weekTotals = await getWeeklyTotalsForMonth(numericYear, numericMonth, models);
+        trends.weekly = weekTotals.map((total, idx) => ({
+            period: `Week ${idx + 1}`,
+            netRevenue: total,
+        }));
     }
 
-    return { type, year, trend };
+    // --- Monthly trend ---
+    const monthTotals = await getMonthlyNetTotalsForYear(numericYear, models);
+    trends.monthly = monthTotals.map((total, idx) => ({
+        period: new Date(numericYear, idx).toLocaleString("default", { month: "short" }),
+        netRevenue: total,
+    }));
+
+    // --- Quarterly trend ---
+    const quarterTotals = await getQuarterlyNetTotalsForYear(numericYear, models);
+    trends.quarterly = quarterTotals.map((total, idx) => ({
+        period: `Q${idx + 1}`,
+        netRevenue: total,
+    }));
+
+    // --- Yearly trend ---
+    const { years, totals } = await getAllYearlyNetTotals(models);
+    trends.yearly = years.map((y, idx) => ({
+        period: y.toString(),
+        netRevenue: totals[idx],
+    }));
+
+    return trends;
 };
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // --- Main Express Handler (updated to include heatmaps) ---------------------
@@ -524,7 +522,7 @@ exports.getFinancialReportHandler = async (req, res) => {
             models,
         });
 
-        const trend = await getRevenueTrend(type, parseInt(year), models);
+        const trend = await getRevenueTrends(parseInt(year), type === "month" ? parseInt(month) : undefined, models);
 
         // -----------------------------
         // Heatmaps
