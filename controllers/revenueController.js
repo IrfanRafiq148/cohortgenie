@@ -45,6 +45,57 @@ const getDateRange = ({ month, quarter, year }) => {
 };
 
 /**
+ * Helper: Get 4-week net totals for a given month
+ * Returns array of 4 numbers → [Week1, Week2, Week3, Week4]
+ */
+const getWeeklyTotalsForMonth = async (year, month, models) => {
+    const weeklyTotals = [0, 0, 0, 0];
+
+    let realmId = "9341455667651492";
+
+    // Helper aggregate for ONE week
+    const aggWeek = async (Model, start, end) => {
+        const r = await Model.aggregate([
+            {
+                $match: {
+                    realmId: realmId,
+                    txnDate: { $gte: start, $lte: end }
+                }
+            },
+            {
+                $group: { _id: null, total: { $sum: "$amount" } }
+            }
+        ]);
+        return r[0]?.total || 0;
+    };
+
+    // Build 4 week ranges
+    const weekRanges = [
+        { start: new Date(year, month - 1, 1), end: new Date(year, month - 1, 7, 23, 59, 59) },
+        { start: new Date(year, month - 1, 8), end: new Date(year, month - 1, 14, 23, 59, 59) },
+        { start: new Date(year, month - 1, 15), end: new Date(year, month - 1, 21, 23, 59, 59) },
+        { start: new Date(year, month - 1, 22), end: new Date(year, month - 1, 31, 23, 59, 59) }
+    ];
+
+    // Aggregate for each week
+    for (let i = 0; i < 4; i++) {
+        const { start, end } = weekRanges[i];
+
+        const [inv, sr, cm, rr] = await Promise.all([
+            aggWeek(models.Invoice, start, end),
+            aggWeek(models.SalesReceipt, start, end),
+            aggWeek(models.CreditMemo, start, end),
+            aggWeek(models.RefundReceipt, start, end),
+        ]);
+
+        weeklyTotals[i] = inv + sr - (cm + rr);
+    }
+
+    return weeklyTotals;
+};
+
+
+/**
  * Helper: Aggregate total from collection within date range
  */
 const getTotal = async (Model, startDate, endDate) => {
@@ -132,6 +183,27 @@ const percentageMatrix = (arr) => {
 
     return matrix;
 };
+
+const percentageMatrixWeeks = (arr) => {
+    const n = arr.length;
+    const matrix = Array.from({ length: n }, () => Array(n).fill(0));
+
+    for (let i = 0; i < n; i++) {
+        const base = arr[i] || 0;
+        for (let j = 0; j < n; j++) {
+            if (i === j) {
+                matrix[i][j] = 100;
+            } else if (base === 0) {
+                matrix[i][j] = 0;
+            } else {
+                matrix[i][j] = Math.round((arr[j] / base) * 100);
+            }
+        }
+    }
+
+    return matrix;
+};
+
 
 
 /**
@@ -469,6 +541,21 @@ exports.getFinancialReportHandler = async (req, res) => {
         const { years: allYears, totals: yearTotals } = await getAllYearlyNetTotals(models);
         const yearMatrix = percentageMatrix(yearTotals); // NxN
 
+        // -----------------------------
+        // 4-Week Heatmap (only for month type)
+        // -----------------------------
+        let weekTotals = [];
+        let weekMatrix = [];
+
+        if (type === "month") {
+            const numericYear = parseInt(year);
+            const numericMonth = parseInt(month);
+
+            weekTotals = await getWeeklyTotalsForMonth(numericYear, numericMonth, models);
+            weekMatrix = percentageMatrixWeeks(weekTotals);
+        }
+
+
         // Compose cohortGenie payload
         res.status(200).json({
             success: true,
@@ -483,7 +570,13 @@ exports.getFinancialReportHandler = async (req, res) => {
                         year: parseInt(year),
                         monthTotals,   // raw numeric totals for each month (Jan..Dec)
                         monthMatrix,   // 12x12 percent matrix (rows = base month)
-                        monthLabels: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+                        monthLabels: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
+
+
+                         // NEW
+                        weekTotals,
+                        weekMatrix,
+                        weekLabels: ["Week 1", "Week 2", "Week 3", "Week 4"]
                     },
                     quarter: {
                         year: parseInt(year),
