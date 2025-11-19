@@ -35,6 +35,7 @@ exports.register = async (req, res) => {
 
         res.status(201).json({ 
             message: 'User created successfully.',
+            connection_flag: false,
             token: token,
             user: {
                 ...user.toObject(),
@@ -57,7 +58,9 @@ exports.login = async (req, res) => {
         if (!isMatch) return res.status(400).json({ message: 'Invalid password' });
         // role: user.role
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
-        res.json({ token, user });
+        var flag = user.accessToken_qb && user.refreshToken_qb ? true : false;
+        // return (expiry - this.latency > Date.now());
+        res.json({ connection_flag: flag,token, user });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
