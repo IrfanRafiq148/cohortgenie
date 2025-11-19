@@ -598,3 +598,43 @@ exports.getFinancialReportHandler = async (req, res) => {
         });
     }
 };
+
+
+exports.parsePeriod = (value, type) => {
+    if (type === "month") {
+        const [month, year] = value.split("-").map(Number);
+        const start = new Date(year, month - 1, 1);
+        const end = new Date(year, month, 0, 23, 59, 59);
+        return { start, end };
+    } else if (type === "quarter") {
+        const [q, year] = value.split("-").map(Number);
+        const startMonth = (q - 1) * 3;
+        const start = new Date(year, startMonth, 1);
+        const end = new Date(year, startMonth + 3, 0, 23, 59, 59);
+        return { start, end };
+    } else if (type === "year") {
+        const year = Number(value);
+        const start = new Date(year, 0, 1);
+        const end = new Date(year, 11, 31, 23, 59, 59);
+        return { start, end };
+    }
+    throw new Error("Invalid type");
+};
+
+exports.calculateMetrics = async (startDate, endDate, models) => {
+    const [inv, sr, cm, rr, cust] = await Promise.all([
+        getTotal(models.Invoice, startDate, endDate),
+        getTotal(models.SalesReceipt, startDate, endDate),
+        getTotal(models.CreditMemo, startDate, endDate),
+        getTotal(models.RefundReceipt, startDate, endDate),
+        getCustomerCount(models.Customer, startDate, endDate),
+    ]);
+
+    const netRevenue = inv + sr - (cm + rr);
+    const churn = netRevenue === 0 ? inv + sr : 0;
+    const GDR = netRevenue ? ((netRevenue / (inv + sr)) * 100).toFixed(2) : "0.00";
+    const NDR = netRevenue ? ((netRevenue / (inv + sr - churn)) * 100).toFixed(2) : "0.00";
+    const LTV = cust ? (netRevenue / cust).toFixed(2) : "0.00";
+
+    return { netRevenue, churn, GDR: `${GDR}%`, NDR: `${NDR}%`, LTV: `$${LTV}`, customers: cust };
+};

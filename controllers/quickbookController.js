@@ -69,7 +69,7 @@ exports.Invoice = async (req, res) => {
     console.log("Reached Invoice controller");
     try {
         var value = req.query.value || "previous36months";
-        const userId = "6911d5e52824b16e46fce852";  // logged-in user id
+        const userId = req.user.id  // logged-in user id
         const user = await User.findById(userId);
         const accessToken = await exports.getValidAccessToken(userId);
         const companyId = user.realmId;
@@ -118,7 +118,7 @@ exports.Customer = async (req, res) => {
 
     try {
         var value = req.query.value || "previous36months";
-        const userId = "6911d5e52824b16e46fce852";  // logged-in user id
+        const userId = req.user.id  // logged-in user id
         const user = await User.findById(userId);
         if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -173,7 +173,7 @@ exports.SalesReceipt = async (req, res) => {
 
     try {
         var value = req.query.value || "previous36months";
-        const userId = "6911d5e52824b16e46fce852";  // logged-in user id
+        const userId = req.user.id  // logged-in user id
         const user = await User.findById(userId);
         if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -228,7 +228,7 @@ exports.RefundReceipt = async (req, res) => {
 
     try {
         var value = req.query.value || "previous36months";
-        const userId = "6911d5e52824b16e46fce852";  // logged-in user id
+        const userId = req.user.id  // logged-in user id
         const user = await User.findById(userId);
         if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -283,7 +283,7 @@ exports.CreditMemo = async (req, res) => {
 
     try {
         var value = req.query.value || "previous36months";
-        const userId = "6911d5e52824b16e46fce852";  // logged-in user id
+        const userId = req.user.id  // logged-in user id
         const user = await User.findById(userId);
         if (!user) return res.status(404).json({ message: "User not found" });
 

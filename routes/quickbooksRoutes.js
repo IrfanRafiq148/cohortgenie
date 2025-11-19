@@ -19,7 +19,7 @@ const oauthClient = new OAuthClient({
 // Step 1: Redirect user to QuickBooks authorization page
 // /auth route
 router.get('/auth', (req, res) => {
-    const userId = "6911d5e52824b16e46fce852";  // <-- logged-in user id
+    const userId = req.user.id  // <-- logged-in user id
 
     const authUri = oauthClient.authorizeUri({
         scope: [
@@ -73,7 +73,7 @@ router.get('/callback', async (req, res) => {
 // Optional: Refresh token
 router.get('/refresh', async (req, res) => {
     try {
-        const userId = "6911d5e52824b16e46fce852";  // <-- logged-in user id
+        const userId = req.user.id  // <-- logged-in user id
         const user = await User.findById(userId);
         oauthClient.setToken({
             refresh_token: user.refreshToken_qb,
@@ -96,10 +96,10 @@ router.get('/refresh', async (req, res) => {
 });
 
 // router.get('/invoice', authMiddleware, quickbookController.Invoice);
-router.get('/invoice', quickbookController.Invoice);
-router.get('/customer', quickbookController.Customer);
-router.get('/salesreceipt', quickbookController.SalesReceipt);
-router.get('/refundreceipt', quickbookController.RefundReceipt);
-router.get('/creditmemo', quickbookController.CreditMemo);
+router.get('/invoice', authMiddleware, quickbookController.Invoice);
+router.get('/customer', authMiddleware, quickbookController.Customer);
+router.get('/salesreceipt', authMiddleware, quickbookController.SalesReceipt);
+router.get('/refundreceipt', authMiddleware, quickbookController.RefundReceipt);
+router.get('/creditmemo', authMiddleware, quickbookController.CreditMemo);
 
 module.exports = router;
