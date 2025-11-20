@@ -15,7 +15,7 @@ const app = express();
 app.use(cors({
   origin: '*', // Allow all domains
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  // allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 app.use(express.json());
 
