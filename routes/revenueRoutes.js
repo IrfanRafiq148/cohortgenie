@@ -21,6 +21,8 @@ require('dotenv').config();
 
 router.get('/financial-report', authMiddleware, revenueController.getFinancialReportHandler);
 
+router.post('/extractMatrixData', revenueController.extractMatrixData);
+
 // http://localhost:5000/api/revenue/compare-periods?period1=2025&period2=2027&type=year
 // http://localhost:5000/api/revenue/compare-periods?period1=2-2025&period2=3-2025&type=quarter
 // http://localhost:5000/api/revenue/compare-periods?period1=09-2025&period2=10-2027&type=month
