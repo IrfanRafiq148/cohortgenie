@@ -35,39 +35,69 @@ router.get('/auth', (req, res) => {
 
 
 // Step 2: Callback endpoint after user authorizes
+// router.get('/callback',authMiddleware, async (req, res) => {
+//     try {
+//         // Extract state from query (contains our userId)
+//         // const state = req.query.state;  // e.g., "user_654abc12edf3"
+//         const userId = req.user.id;//state.replace("user_", "");
+
+//         const token = await oauthClient.createToken(req.url);
+
+//         console.log("User:", userId);
+//         console.log("Access Token:", token.token.access_token);
+//         console.log("Refresh Token:", token.token.refresh_token);
+//         console.log("Expiry:", token.token.expires_in);
+
+//         // ✅ Save in DB
+//         const user = await User.findById(userId);
+//         if (!user) {
+//             throw new Error(`User with id ${userId} not found`);
+//         }
+//         user.accessToken_qb = token.token.access_token;
+//         user.refreshToken_qb = token.token.refresh_token;
+//         user.realmId = token.token.realmId;
+//         user.accessToken_expires_at_qb = token.token.expires_in; // Date object
+//         user.refreshToken_expires_at_qb = token.token.x_refresh_token_expires_in; // Date object
+//         user.accessToken_created_at_qb =  Date.now();
+//         user.refreshToken_created_at_qb = Date.now();
+//         await user.save();
+
+//         res.send(`QuickBooks token saved for user ${userId}`);
+//     } catch (err) {
+//         console.error(err);
+//         res.status(500).send("Failed to generate token.");
+//     }
+// });
+
 router.get('/callback',authMiddleware, async (req, res) => {
     try {
-        // Extract state from query (contains our userId)
-        // const state = req.query.state;  // e.g., "user_654abc12edf3"
-        const userId = req.user.id;//state.replace("user_", "");
+        const { code, state } = req.query; 
+        const userId = state.replace("user_", "");
 
-        const token = await oauthClient.createToken(req.url);
+        const fullUrl = `${process.env.BACKEND_URL}/api/quickbooks/callback?code=${code}&state=${state}`;
 
-        console.log("User:", userId);
-        console.log("Access Token:", token.token.access_token);
-        console.log("Refresh Token:", token.token.refresh_token);
-        console.log("Expiry:", token.token.expires_in);
+        const token = await oauthClient.createToken(fullUrl);
 
-        // ✅ Save in DB
         const user = await User.findById(userId);
-        if (!user) {
-            throw new Error(`User with id ${userId} not found`);
-        }
+        if (!user) throw new Error(`User ${userId} not found`);
+
         user.accessToken_qb = token.token.access_token;
         user.refreshToken_qb = token.token.refresh_token;
         user.realmId = token.token.realmId;
-        user.accessToken_expires_at_qb = token.token.expires_in; // Date object
-        user.refreshToken_expires_at_qb = token.token.x_refresh_token_expires_in; // Date object
-        user.accessToken_created_at_qb =  Date.now();
+        user.accessToken_created_at_qb = Date.now();
         user.refreshToken_created_at_qb = Date.now();
+        user.accessToken_expires_at_qb = token.token.expires_in;
+        user.refreshToken_expires_at_qb = token.token.x_refresh_token_expires_in;
+
         await user.save();
 
-        res.send(`QuickBooks token saved for user ${userId}`);
-    } catch (err) {
-        console.error(err);
-        res.status(500).send("Failed to generate token.");
+        res.send("QuickBooks Connected Successfully!");
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Failed to process QuickBooks callback.");
     }
 });
+
 
 
 // Optional: Refresh token
