@@ -193,7 +193,8 @@ exports.getCurrentUser = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
         var flag = user.accessToken_qb && user.refreshToken_qb ? true : false;
-        res.status(200).json({ connection_flag: flag, user });
+        user.connection_flag = flag;
+        res.status(200).json({user });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
