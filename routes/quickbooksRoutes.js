@@ -18,8 +18,8 @@ const oauthClient = new OAuthClient({
 
 // Step 1: Redirect user to QuickBooks authorization page
 // /auth route
-router.get('/auth',authMiddleware, (req, res) => {
-    const userId = req.user.id  // <-- logged-in user id
+router.get('/auth', (req, res) => {
+    // const userId = req.user.id  // <-- logged-in user id
 
     const authUri = oauthClient.authorizeUri({
         scope: [
