@@ -24,7 +24,7 @@ const authMiddleware = async (req, res, next) => {
 
         const currentDate = new Date();
 
-        if (currentDate <= expiryDate) {
+        if (currentDate >= expiryDate) {
             return res.status(403).json({ message: 'Quick Book Access Expired. Please login again', quickbook: false });
         }
 
