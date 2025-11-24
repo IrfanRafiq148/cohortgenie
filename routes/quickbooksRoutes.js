@@ -69,14 +69,17 @@ router.get('/auth', (req, res) => {
 //     }
 // });
 
-router.get('/callback',authMiddleware, async (req, res) => {
+router.get('/callback', async (req, res) => {
     try {
-        const { code, state } = req.query; 
-        const userId = state.replace("user_", "");
+        const { code, state } = req.query;
 
-        const fullUrl = `http://localhost:3000/integration?step=2&code=${code}&state=${state}`;
+        // state = userId
+        const userId = state;
 
-        const token = await oauthClient.createToken(fullUrl);
+        // EXACT redirect uri that QB saw
+        const redirectUri = `http://localhost:3000/integration?step=2&code=${code}&state=${state}`;
+
+        const token = await oauthClient.createToken(redirectUri);
 
         const user = await User.findById(userId);
         if (!user) throw new Error(`User ${userId} not found`);
@@ -93,10 +96,11 @@ router.get('/callback',authMiddleware, async (req, res) => {
 
         res.send("QuickBooks Connected Successfully!");
     } catch (error) {
-        console.error(error);
+        console.error("QB Callback ERROR:", error);
         res.status(500).send("Failed to process QuickBooks callback.");
     }
 });
+
 
 
 
