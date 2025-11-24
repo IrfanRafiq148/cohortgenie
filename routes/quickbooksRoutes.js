@@ -18,7 +18,7 @@ const oauthClient = new OAuthClient({
 
 // Step 1: Redirect user to QuickBooks authorization page
 // /auth route
-router.get('/auth', (req, res) => {
+router.get('/auth',authMiddleware, (req, res) => {
     const userId = req.user.id  // <-- logged-in user id
 
     const authUri = oauthClient.authorizeUri({
@@ -35,7 +35,7 @@ router.get('/auth', (req, res) => {
 
 
 // Step 2: Callback endpoint after user authorizes
-router.get('/callback', async (req, res) => {
+router.get('/callback',authMiddleware, async (req, res) => {
     try {
         // Extract state from query (contains our userId)
         // const state = req.query.state;  // e.g., "user_654abc12edf3"
@@ -71,7 +71,7 @@ router.get('/callback', async (req, res) => {
 
 
 // Optional: Refresh token
-router.get('/refresh', async (req, res) => {
+router.get('/refresh',authMiddleware, async (req, res) => {
     try {
         const userId = req.user.id  // <-- logged-in user id
         const user = await User.findById(userId);
