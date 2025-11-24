@@ -27,7 +27,7 @@ router.get('/auth', (req, res) => {
             OAuthClient.scopes.OpenId,
             OAuthClient.scopes.Email
         ],
-        state: `user_${userId}`   // <-- pass user id here securely
+        // state: `user_${userId}`   // <-- pass user id here securely
     });
 
     res.redirect(authUri);
@@ -38,8 +38,8 @@ router.get('/auth', (req, res) => {
 router.get('/callback', async (req, res) => {
     try {
         // Extract state from query (contains our userId)
-        const state = req.query.state;  // e.g., "user_654abc12edf3"
-        const userId = state.replace("user_", "");
+        // const state = req.query.state;  // e.g., "user_654abc12edf3"
+        const userId = req.user.id;//state.replace("user_", "");
 
         const token = await oauthClient.createToken(req.url);
 
