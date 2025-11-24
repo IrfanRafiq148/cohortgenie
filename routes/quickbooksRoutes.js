@@ -62,7 +62,7 @@ router.get('/callback', async (req, res) => {
         user.refreshToken_created_at_qb = Date.now();
         await user.save();
             // Redirect user to frontend page
-        res.redirect('http://localhost:3000/integration?step=2&status=connected');
+        res.redirect('https://cohortgenie.vercel.app/integration?step=2&status=connected');
         res.send(`QuickBooks token saved for user ${userId}`);
     } catch (err) {
         console.error(err);

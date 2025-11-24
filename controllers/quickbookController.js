@@ -81,7 +81,7 @@ exports.Invoice = async (req, res) => {
         const invoices = data?.QueryResponse?.Invoice;
 
         if (!invoices || invoices.length === 0) {
-            return res.json({ message: "No Invoices found" });
+            return res.status(200).json({ message: "No Invoices found" });
         }
 
         // Map invoices
@@ -105,7 +105,7 @@ exports.Invoice = async (req, res) => {
         const bulkResult = await Invoice.bulkWrite(operations);
 
         console.log(`✅ Synced ${mappedInvoices.length} invoices`);
-        return res.json(bulkResult);
+        return res.status(200).json(bulkResult);
 
     } catch (err) {
         console.error(err);  // log the actual error
@@ -135,7 +135,7 @@ exports.Customer = async (req, res) => {
         const customers = data?.QueryResponse?.Customer;
 
         if (!customers || customers.length === 0) {
-            return res.json({ message: "No Customers found" });
+            return res.status(200).json({ message: "No Customers found" });
         }
 
         // Map customer objects
@@ -160,7 +160,7 @@ exports.Customer = async (req, res) => {
         const bulkResult = await Customer.bulkWrite(operations);
 
         console.log(`✅ Synced ${mappedCustomers.length} customers`);
-        return res.json(bulkResult);
+        return res.status(200).json(bulkResult);
 
     } catch (err) {
         console.error(err);  // log actual error
@@ -191,7 +191,7 @@ exports.SalesReceipt = async (req, res) => {
         const salesReceipts = data?.QueryResponse?.SalesReceipt;
 
         if (!salesReceipts || salesReceipts.length === 0) {
-            return res.json({ message: "No SalesReceipts found" });
+            return res.status(200).json({ message: "No SalesReceipts found" });
         }
 
         // Map sales receipt objects
@@ -216,7 +216,7 @@ exports.SalesReceipt = async (req, res) => {
         const bulkResult = await SalesReceipt.bulkWrite(operations);
 
         console.log(`✅ Synced ${mappedReceipts.length} SalesReceipts`);
-        return res.json(bulkResult);
+        return res.status(200).json(bulkResult);
 
     } catch (err) {
         console.error(err);
@@ -246,7 +246,7 @@ exports.RefundReceipt = async (req, res) => {
         const refundReceipts = data?.QueryResponse?.RefundReceipt;
 
         if (!refundReceipts || refundReceipts.length === 0) {
-            return res.json({ message: "No RefundReceipts found" });
+            return res.status(200).json({ message: "No RefundReceipts found" });
         }
 
         // Map refund receipt objects
@@ -271,7 +271,7 @@ exports.RefundReceipt = async (req, res) => {
         const bulkResult = await RefundReceipt.bulkWrite(operations);
 
         console.log(`✅ Synced ${mappedReceipts.length} RefundReceipts`);
-        return res.json(bulkResult);
+        return res.status(200).json(bulkResult);
 
     } catch (err) {
         console.error(err);
@@ -301,7 +301,7 @@ exports.CreditMemo = async (req, res) => {
         const creditMemos = data?.QueryResponse?.CreditMemo;
 
         if (!creditMemos || creditMemos.length === 0) {
-            return res.json({ message: "No CreditMemos found" });
+            return res.status(200).json({ message: "No CreditMemos found" });
         }
 
         // Map multiple credit memo objects
@@ -326,7 +326,7 @@ exports.CreditMemo = async (req, res) => {
         const bulkResult = await CreditMemo.bulkWrite(operations);
 
         console.log(`✅ Synced ${mappedMemos.length} CreditMemos`);
-        return res.json(bulkResult);
+        return res.status(200).json(bulkResult);
 
     } catch (err) {
         console.error(err);
