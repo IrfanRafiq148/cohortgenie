@@ -74,7 +74,7 @@ router.get('/callback',authMiddleware, async (req, res) => {
         const { code, state } = req.query; 
         const userId = state.replace("user_", "");
 
-        const fullUrl = `http://localhost:3000/integration?step=2?code=${code}&state=${state}`;
+        const fullUrl = `http://localhost:3000/integration?step=2&code=${code}&state=${state}`;
 
         const token = await oauthClient.createToken(fullUrl);
 
