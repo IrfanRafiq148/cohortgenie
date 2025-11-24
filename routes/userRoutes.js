@@ -23,7 +23,7 @@ router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
 
 // Protected routes (require authentication)
-router.get('/profile', authMiddleware, getCurrentUser);
+router.get('/current-user', authMiddleware, getCurrentUser);
 router.patch('/profile', authMiddleware, updateProfile);
 router.post('/change-password', authMiddleware, changePassword);
 
