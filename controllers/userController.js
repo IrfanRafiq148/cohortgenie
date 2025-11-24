@@ -193,8 +193,11 @@ exports.getCurrentUser = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
         var flag = user.accessToken_qb && user.refreshToken_qb ? true : false;
-        user.connection_flag = flag;
-        res.status(200).json({user });
+        const userData = {
+            ...user._doc,  // for Mongoose user objects
+            connection_flag: flag
+        };
+        res.status(200).json({ user: userData });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
