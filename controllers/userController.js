@@ -33,12 +33,15 @@ exports.register = async (req, res) => {
         //     throw new Error('Failed to send welcome email. User registration cancelled.');
         // }
 
+        var flag = user.accessToken_qb && user.refreshToken_qb ? true : false;
+
         res.status(201).json({ 
             message: 'User created successfully.',
-            connection_flag: false,
+            // connection_flag: false,
             token: token,
             user: {
                 ...user.toObject(),
+                connection_flag: flag
                 // password: generatedPassword
             }
         });
