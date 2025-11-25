@@ -6,9 +6,13 @@ const path = require('path');
 const userRoutes = require('./routes/userRoutes');
 const quickbooksRoutes = require('./routes/quickbooksRoutes');
 const revenueRoutes = require('./routes/revenueRoutes');
+const passport = require("./config/passport");
 const connectDB = require('./config/db');
 
 const app = express();
+
+// Initialize Passport
+app.use(passport.initialize());
 
 // Middleware
 // app.use(cors());
@@ -29,6 +33,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/users', userRoutes);
 app.use('/api/quickbooks/', quickbooksRoutes);
 app.use('/api/revenue/', revenueRoutes);
+app.use("/auth", require("./routes/auth"));
 
 // Connect to MongoDB
 connectDB();
