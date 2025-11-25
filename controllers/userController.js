@@ -62,8 +62,12 @@ exports.login = async (req, res) => {
         // role: user.role
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
         var flag = user.accessToken_qb && user.refreshToken_qb ? true : false;
+        const userData = {
+            ...user._doc,  // for Mongoose user objects
+            connection_flag: flag
+        };
         // return (expiry - this.latency > Date.now());
-        res.json({ connection_flag: flag,token, user });
+        res.json({ token, user: userData });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
