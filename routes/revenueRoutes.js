@@ -138,8 +138,8 @@ router.get("/compare-periods", authMiddleware, async (req, res) => {
 
         const chartData2lines = labels.map((label, idx) => ({
             month: label,
-            period1: idx === idx1 ? metrics1.netRevenue : 0,
-            period2: idx === idx2 ? metrics2.netRevenue : 0
+            period1: idx === idx1 ? metrics1.GDR : 0,
+            period2: idx === idx2 ? metrics2.GDR : 0
         }));
 
         // Return response
