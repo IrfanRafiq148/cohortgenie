@@ -120,7 +120,7 @@ router.get("/compare-periods", authMiddleware, async (req, res) => {
         function getLabels(type) {
             if (type === "month") return Array.from({ length: 12 }, (_, i) => `M${i + 1}`);
             if (type === "quarter") return Array.from({ length: 4 }, (_, i) => `Q${i + 1}`);
-            if (type === "year") return ["Y"];
+            if (type === "year") return ["Year"];
             return [];
         }
 
