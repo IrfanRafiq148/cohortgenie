@@ -483,6 +483,84 @@ const getRevenueTrends = async (year, month, models) => {
 // --- Main Express Handler (updated to include heatmaps) ---------------------
 ////////////////////////////////////////////////////////////////////////////////
 
+function generateInsightsByType(data, type = "month") {
+  const insights = [];
+  const formatCash = (n) => `$${Number(n).toFixed(2)}`;
+
+  let totals = [];
+  let labels = [];
+  let matrix = [];
+  let periodName = "";
+
+  // ---------- Select data based on type ----------
+  switch (type) {
+    case "month":
+      totals = data.heatmap.month.monthTotals;
+      labels = data.heatmap.month.monthLabels;
+      matrix = data.heatmap.month.monthMatrix;
+      periodName = "Month";
+      break;
+    case "quarter":
+      totals = data.heatmap.quarter.quarterTotals;
+      labels = data.heatmap.quarter.quarterLabels;
+      matrix = data.heatmap.quarter.quarterMatrix;
+      periodName = "Quarter";
+      break;
+    case "year":
+      totals = data.heatmap.year.yearTotals;
+      labels = data.heatmap.year.years.map(String);
+      matrix = data.heatmap.year.yearMatrix;
+      periodName = "Year";
+      break;
+    default:
+      return [];
+  }
+
+  // ---------- Find highest revenue period ----------
+  const maxIndex = totals.indexOf(Math.max(...totals));
+  const maxValue = totals[maxIndex];
+  const maxLabel = labels[maxIndex];
+
+  // ---------- Compare to previous period ----------
+  let prevValue = 0;
+  let prevLabel = "N/A";
+  if (maxIndex > 0) {
+    prevValue = totals[maxIndex - 1];
+    prevLabel = labels[maxIndex - 1];
+  }
+
+  const diff = maxValue - prevValue;
+  const changePercent = prevValue === 0 ? (maxValue > 0 ? 100 : 0) : ((diff / prevValue) * 100).toFixed(1);
+
+  // ---------- Revenue Comparison Insight ----------
+  insights.push({
+    icon: "ChartFillIcon",
+    title: `Revenue ${changePercent >= 0 ? "+" : ""}${changePercent}% ${type === "month" ? "MoM" : type === "quarter" ? "QoQ" : "YoY"}`,
+    desc: `Revenue moved from ${formatCash(prevValue)} (${prevLabel}) to ${formatCash(maxValue)} (${maxLabel})`
+  });
+
+  // ---------- Top Revenue Period ----------
+  insights.push({
+    icon: "DollerCircleFillIcon",
+    title: `Top Revenue ${periodName}`,
+    desc: `${maxLabel} generated the highest revenue at ${formatCash(maxValue)}`
+  });
+
+  // ---------- Churn / Retention ----------
+  const prevMatrixValue = matrix[maxIndex - 1]?.[maxIndex - 1] || 0;
+  const currMatrixValue = matrix[maxIndex]?.[maxIndex] || 0;
+  const churn = prevMatrixValue === 0 ? (currMatrixValue > 0 ? 100 : 0) : (((currMatrixValue - prevMatrixValue) / prevMatrixValue) * 100).toFixed(1);
+
+  insights.push({
+    icon: "ChartFillIcon",
+    title: churn >= 0 ? "Churn Increased" : "Retention Improved",
+    desc: `Churn changed by ${churn}% from ${prevLabel} to ${maxLabel}`
+  });
+
+  return insights;
+}
+
+
 /**
  * Express Handler — CGP Financial Report (Dynamic Cohort View)
  */
@@ -553,6 +631,34 @@ exports.getFinancialReportHandler = async (req, res) => {
             weekMatrix = percentageMatrixWeeks(weekTotals);
         }
 
+        const heatmap = {
+                    month: {
+                        year: parseInt(year),
+                        monthTotals,   // raw numeric totals for each month (Jan..Dec)
+                        monthMatrix,   // 12x12 percent matrix (rows = base month)
+                        monthLabels: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
+
+
+                         // NEW
+                        weekTotals,
+                        weekMatrix,
+                        weekLabels: ["Week 1", "Week 2", "Week 3", "Week 4"]
+                    },
+                    quarter: {
+                        year: parseInt(year),
+                        quarterTotals, // raw Q1..Q4 totals
+                        quarterMatrix, // 4x4 percent matrix
+                        quarterLabels: ["Q1","Q2","Q3","Q4"]
+                    },
+                    year: {
+                        years: allYears,    // e.g. [2023,2024,2025]
+                        yearTotals,         // raw totals matching years order
+                        yearMatrix          // NxN percent matrix (rows = base year)
+                    }
+                };
+
+                const insights = generateInsightsByType({heatmap}, type);
+
 
         // Compose cohortGenie payload
         res.status(200).json({
@@ -587,7 +693,8 @@ exports.getFinancialReportHandler = async (req, res) => {
                         yearTotals,         // raw totals matching years order
                         yearMatrix          // NxN percent matrix (rows = base year)
                     }
-                }
+                },
+                insights
             }
         });
     } catch (error) {

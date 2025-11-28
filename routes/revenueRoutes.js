@@ -19,7 +19,7 @@ require('dotenv').config();
 
 
 
-router.get('/financial-report', revenueController.getFinancialReportHandler);
+router.get('/financial-report', authMiddleware, revenueController.getFinancialReportHandler);
 
 
 // http://localhost:5000/api/revenue/compare-periods?period1=2025&period2=2027&type=year
