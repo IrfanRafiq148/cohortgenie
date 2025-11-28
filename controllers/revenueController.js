@@ -553,7 +553,7 @@ function generateInsightsByType(data, type = "month") {
 
   insights.push({
     icon: "ChartFillIcon",
-    title: churn >= 0 ? "Churn Increased" : "Retention Improved",
+    title: churn >= 0 ? "Churn" : "Retention Improved",
     desc: `Churn changed by ${churn}% from ${prevLabel} to ${maxLabel}`
   });
 
