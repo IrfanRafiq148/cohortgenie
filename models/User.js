@@ -15,6 +15,7 @@ const userSchema = new mongoose.Schema({
     accessToken_expires_at_qb : String,
     accessToken_created_at_qb: Date,
     refreshToken_created_at_qb: Date,
+    last_sync: Date,
     googleId: String,       // for google login
     avatar: String
 

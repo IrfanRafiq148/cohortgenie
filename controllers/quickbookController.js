@@ -15,6 +15,7 @@ const  OAuthClient  = require('intuit-oauth');
 
 require('dotenv').config();
 
+
 // Initialize Intuit OAuth Client
 const oauthClient = new OAuthClient({
     clientId: process.env.CLIENT_ID,
@@ -22,6 +23,19 @@ const oauthClient = new OAuthClient({
     environment: process.env.ENVIRONMENT, // 'sandbox' or 'production'
     redirectUri: process.env.REDIRECT_URI
 });
+
+const update_sync_date = async (user_id) => {
+    const user = await User.findByIdAndUpdate(
+        user_id,
+        { 
+            last_sync: new Date()
+        },
+        { 
+            new: true, 
+            runValidators: true 
+        }
+    ).select('-password');
+};
 
 exports.getValidAccessToken = async (userId) => {
     const user = await User.findById(userId);
@@ -301,6 +315,7 @@ exports.CreditMemo = async (req, res) => {
         const creditMemos = data?.QueryResponse?.CreditMemo;
 
         if (!creditMemos || creditMemos.length === 0) {
+            update_sync_date(userId);
             return res.status(200).json({ message: "No CreditMemos found" });
         }
 
@@ -326,6 +341,7 @@ exports.CreditMemo = async (req, res) => {
         const bulkResult = await CreditMemo.bulkWrite(operations);
 
         console.log(`✅ Synced ${mappedMemos.length} CreditMemos`);
+        update_sync_date(userId);
         return res.status(200).json(bulkResult);
 
     } catch (err) {
