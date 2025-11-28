@@ -534,14 +534,12 @@ function generateInsightsByType(data, type = "month") {
 
   // ---------- Revenue Comparison Insight ----------
   insights.push({
-    icon: "ChartFillIcon",
     title: `Revenue ${changePercent >= 0 ? "+" : ""}${changePercent}% ${type === "month" ? "MoM" : type === "quarter" ? "QoQ" : "YoY"}`,
     desc: `Revenue moved from ${formatCash(prevValue)} (${prevLabel}) to ${formatCash(maxValue)} (${maxLabel})`
   });
 
   // ---------- Top Revenue Period ----------
   insights.push({
-    icon: "DollerCircleFillIcon",
     title: `Top Revenue ${periodName}`,
     desc: `${maxLabel} generated the highest revenue at ${formatCash(maxValue)}`
   });
@@ -552,7 +550,6 @@ function generateInsightsByType(data, type = "month") {
   const churn = prevMatrixValue === 0 ? (currMatrixValue > 0 ? 100 : 0) : (((currMatrixValue - prevMatrixValue) / prevMatrixValue) * 100).toFixed(1);
 
   insights.push({
-    icon: "ChartFillIcon",
     title: churn >= 0 ? "Churn" : "Retention Improved",
     desc: `Churn changed by ${churn}% from ${prevLabel} to ${maxLabel}`
   });
