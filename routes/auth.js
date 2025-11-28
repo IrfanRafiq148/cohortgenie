@@ -27,16 +27,17 @@ router.get(
   "/google/callback",
   passport.authenticate("google", { session: false }),
 
-  (req, res) => {
+  async (req, res) => {
     const token = createToken(req.user);
 
     // redirect with JWT token
-    // var flag = req.user.accessToken_qb && req.user.refreshToken_qb ? true : false;
+    const user = await User.findOne({ email: req.user.email });
+    var flag = req.user.accessToken_qb && req.user.refreshToken_qb ? true : false;
     //     const userData = {
     //         ...req.user._doc,  // for Mongoose user objects
     //         connection_flag: flag
     //     };
-        res.redirect('http://localhost:3000/login?token=' + token + '&status=connected');
+        res.redirect('http://localhost:3000/login?token=' + token + '&status=connected&connection_flag=' + flag);
     res.json({
       message: "Google login successful",
       user: userData,
