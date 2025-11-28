@@ -31,11 +31,12 @@ router.get(
     const token = createToken(req.user);
 
     // redirect with JWT token
-    var flag = user.accessToken_qb && user.refreshToken_qb ? true : false;
-        const userData = {
-            ...user._doc,  // for Mongoose user objects
-            connection_flag: flag
-        };
+    // var flag = req.user.accessToken_qb && req.user.refreshToken_qb ? true : false;
+    //     const userData = {
+    //         ...req.user._doc,  // for Mongoose user objects
+    //         connection_flag: flag
+    //     };
+        res.redirect('http://localhost:3000/login?token=' + token + '&status=connected');
     res.json({
       message: "Google login successful",
       user: userData,
