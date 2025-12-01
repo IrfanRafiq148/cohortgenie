@@ -48,13 +48,13 @@ const getDateRange = ({ month, quarter, year }) => {
  * Helper: Get 4-week net totals for a given month
  * Returns array of 4 numbers → [Week1, Week2, Week3, Week4]
  */
-const getWeeklyTotalsForMonth = async (year, month, models) => {
+const getWeeklyTotalsForMonth = async (year, month, models, realmId) => {
     const weeklyTotals = [0, 0, 0, 0];
 
-    let realmId = "9341455667651492";
+    // let realmId = realmId;
 
     // Helper aggregate for ONE week
-    const aggWeek = async (Model, start, end) => {
+    const aggWeek = async (Model, start, end, realmId) => {
         const r = await Model.aggregate([
             {
                 $match: {
@@ -82,10 +82,10 @@ const getWeeklyTotalsForMonth = async (year, month, models) => {
         const { start, end } = weekRanges[i];
 
         const [inv, sr, cm, rr] = await Promise.all([
-            aggWeek(models.Invoice, start, end),
-            aggWeek(models.SalesReceipt, start, end),
-            aggWeek(models.CreditMemo, start, end),
-            aggWeek(models.RefundReceipt, start, end),
+            aggWeek(models.Invoice, start, end, realmId),
+            aggWeek(models.SalesReceipt, start, end, realmId),
+            aggWeek(models.CreditMemo, start, end, realmId),
+            aggWeek(models.RefundReceipt, start, end, realmId),
         ]);
 
         weeklyTotals[i] = inv + sr - (cm + rr);
@@ -98,8 +98,8 @@ const getWeeklyTotalsForMonth = async (year, month, models) => {
 /**
  * Helper: Aggregate total from collection within date range
  */
-const getTotal = async (Model, startDate, endDate) => {
-    let realmId = "9341455667651492";
+const getTotal = async (Model, startDate, endDate, realmId) => {
+    // let realmId = realmId;
     try {
         const result = await Model.aggregate([
             { $match: { realmId: realmId, txnDate: { $gte: startDate, $lte: endDate } } },
@@ -115,8 +115,8 @@ const getTotal = async (Model, startDate, endDate) => {
 /**
  * Helper: Count customers in the period
  */
-const getCustomerCount = async (Customer, startDate, endDate) => {
-    let realmId = "9341455667651492";
+const getCustomerCount = async (Customer, startDate, endDate,realmId) => {
+    // let realmId = realmId;
     try {
         const start = new Date(startDate);
         const end = new Date(endDate);
@@ -210,11 +210,11 @@ const percentageMatrixWeeks = (arr) => {
  * Get monthly net revenue totals for a given year (returns array length 12)
  * uses aggregation for invoice + salesReceipt - creditMemo - refundReceipt
  */
-const getMonthlyNetTotalsForYear = async (year, { Invoice, SalesReceipt, CreditMemo, RefundReceipt }) => {
+const getMonthlyNetTotalsForYear = async (year, { Invoice, SalesReceipt, CreditMemo, RefundReceipt }, realmId) => {
     const monthlyTotals = Array(12).fill(0);
 
     // Helper to aggregate sums grouped by month
-    let realmId = "9341455667651492";
+    // let realmId = realmId;
     const aggregateByMonth = async (Model) => {
         const res = await Model.aggregate([
             {
@@ -266,8 +266,8 @@ const getMonthlyNetTotalsForYear = async (year, { Invoice, SalesReceipt, CreditM
 /**
  * Get quarterly net totals for a given year (returns array length 4)
  */
-const getQuarterlyNetTotalsForYear = async (year, models) => {
-    const monthly = await getMonthlyNetTotalsForYear(year, models);
+const getQuarterlyNetTotalsForYear = async (year, models, realmId) => {
+    const monthly = await getMonthlyNetTotalsForYear(year, models, realmId);
     const q = [
         monthly[0] + monthly[1] + monthly[2], // Q1
         monthly[3] + monthly[4] + monthly[5], // Q2
@@ -281,14 +281,16 @@ const getQuarterlyNetTotalsForYear = async (year, models) => {
  * Get yearly net totals for ALL years present in DB for the four models.
  * Returns { years: [2022,2023,...], totals: [sum2022, sum2023, ...] }
  */
-const getAllYearlyNetTotals = async ({ Invoice, SalesReceipt, CreditMemo, RefundReceipt }) => {
+const getAllYearlyNetTotals = async ({ Invoice, SalesReceipt, CreditMemo, RefundReceipt }, realmId) => {
     // helper to aggregate totals by year per model
-    const aggregateByYear = async (Model) => {
-        let realmId = "9341455667651492";
+    const aggregateByYear = async (Model, realmId) => {
+        // Ensure we filter by realmId with a $match
         const res = await Model.aggregate([
             {
+                $match: { realmId: realmId }
+            },
+            {
                 $project: {
-                    realmId: realmId,
                     year: { $year: "$txnDate" },
                     amount: "$amount",
                 }
@@ -306,10 +308,10 @@ const getAllYearlyNetTotals = async ({ Invoice, SalesReceipt, CreditMemo, Refund
     };
 
     const [invMap, srMap, cmMap, rrMap] = await Promise.all([
-        aggregateByYear(Invoice),
-        aggregateByYear(SalesReceipt),
-        aggregateByYear(CreditMemo),
-        aggregateByYear(RefundReceipt),
+        aggregateByYear(Invoice, realmId),
+        aggregateByYear(SalesReceipt, realmId),
+        aggregateByYear(CreditMemo, realmId),
+        aggregateByYear(RefundReceipt, realmId),
     ]);
 
     // union of years
@@ -339,7 +341,7 @@ const getAllYearlyNetTotals = async ({ Invoice, SalesReceipt, CreditMemo, Refund
 /**
  * Helper: Calculate financial summary for given period
  */
-const getFinancialSummary = async ({ month, quarter, year, type, models }) => {
+const getFinancialSummary = async ({ month, quarter, year, type, models }, realmId) => {
     const { startDate, endDate } = getDateRange({ month, quarter, year });
 
     // === Current Period Totals ===
@@ -350,11 +352,11 @@ const getFinancialSummary = async ({ month, quarter, year, type, models }) => {
         refundReceiptTotal,
         customerCount,
     ] = await Promise.all([
-        getTotal(models.Invoice, startDate, endDate),
-        getTotal(models.SalesReceipt, startDate, endDate),
-        getTotal(models.CreditMemo, startDate, endDate),
-        getTotal(models.RefundReceipt, startDate, endDate),
-        getCustomerCount(models.Customer, startDate, endDate),
+        getTotal(models.Invoice, startDate, endDate,realmId),
+        getTotal(models.SalesReceipt, startDate, endDate,realmId),
+        getTotal(models.CreditMemo, startDate, endDate,realmId),
+        getTotal(models.RefundReceipt, startDate, endDate,realmId),
+        getCustomerCount(models.Customer, startDate, endDate,realmId),
     ]);
 
     const totalRevenue = invoiceTotal + salesReceiptTotal;
@@ -371,10 +373,10 @@ const getFinancialSummary = async ({ month, quarter, year, type, models }) => {
     prevEnd.setHours(23, 59, 59, 999);
 
     const [prevInvoice, prevSales, prevCredit, prevRefund] = await Promise.all([
-        getTotal(models.Invoice, prevStart, prevEnd),
-        getTotal(models.SalesReceipt, prevStart, prevEnd),
-        getTotal(models.CreditMemo, prevStart, prevEnd),
-        getTotal(models.RefundReceipt, prevStart, prevEnd),
+        getTotal(models.Invoice, prevStart, prevEnd,realmId),
+        getTotal(models.SalesReceipt, prevStart, prevEnd,realmId),
+        getTotal(models.CreditMemo, prevStart, prevEnd,realmId),
+        getTotal(models.RefundReceipt, prevStart, prevEnd,realmId),
     ]);
 
     const prevNet = prevInvoice + prevSales - (prevCredit + prevRefund);
@@ -434,7 +436,7 @@ const getFinancialSummary = async ({ month, quarter, year, type, models }) => {
  * Trend generator — weekly / month / quarter / year view
  * Returns { weekly, monthly, quarterly, yearly } with netRevenue
  */
-const getRevenueTrends = async (year, month, models) => {
+const getRevenueTrends = async (year, month, models, realmId) => {
     const trends = {
         weekly: [],
         monthly: [],
@@ -447,7 +449,7 @@ const getRevenueTrends = async (year, month, models) => {
     // --- Weekly trend (only if month provided) ---
     if (month) {
         const numericMonth = parseInt(month);
-        const weekTotals = await getWeeklyTotalsForMonth(numericYear, numericMonth, models);
+        const weekTotals = await getWeeklyTotalsForMonth(numericYear, numericMonth, models, realmId);
         trends.weekly = weekTotals.map((total, idx) => ({
             period: `Week ${idx + 1}`,
             netRevenue: total,
@@ -455,21 +457,21 @@ const getRevenueTrends = async (year, month, models) => {
     }
 
     // --- Monthly trend ---
-    const monthTotals = await getMonthlyNetTotalsForYear(numericYear, models);
+    const monthTotals = await getMonthlyNetTotalsForYear(numericYear, models, realmId);
     trends.monthly = monthTotals.map((total, idx) => ({
         period: new Date(numericYear, idx).toLocaleString("default", { month: "short" }),
         netRevenue: total,
     }));
 
     // --- Quarterly trend ---
-    const quarterTotals = await getQuarterlyNetTotalsForYear(numericYear, models);
+    const quarterTotals = await getQuarterlyNetTotalsForYear(numericYear, models, realmId);
     trends.quarterly = quarterTotals.map((total, idx) => ({
         period: `Q${idx + 1}`,
         netRevenue: total,
     }));
 
     // --- Yearly trend ---
-    const { years, totals } = await getAllYearlyNetTotals(models);
+    const { years, totals } = await getAllYearlyNetTotals(models, realmId);
     trends.yearly = years.map((y, idx) => ({
         period: y.toString(),
         netRevenue: totals[idx],
@@ -595,23 +597,24 @@ exports.getFinancialReportHandler = async (req, res) => {
             quarter: type === "quarter" ? parseInt(quarter) : undefined,
             year: parseInt(year),
             models,
+            realmId: req.user.realmId
         });
 
-        const trend = await getRevenueTrends(parseInt(year), type === "month" ? parseInt(month) : undefined, models);
+        const trend = await getRevenueTrends(parseInt(year), type === "month" ? parseInt(month) : undefined, models, req.user.realmId);
 
         // -----------------------------
         // Heatmaps
         // -----------------------------
         // 1) Month totals for requested year (12)
-        const monthTotals = await getMonthlyNetTotalsForYear(parseInt(year), models);
+        const monthTotals = await getMonthlyNetTotalsForYear(parseInt(year), models, req.user.realmId);
         const monthMatrix = percentageMatrix(monthTotals); // 12x12
 
         // 2) Quarter totals for requested year (4)
-        const quarterTotals = await getQuarterlyNetTotalsForYear(parseInt(year), models);
+        const quarterTotals = await getQuarterlyNetTotalsForYear(parseInt(year), models, req.user.realmId);
         const quarterMatrix = percentageMatrix(quarterTotals); // 4x4
 
         // 3) Year totals for ALL years
-        const { years: allYears, totals: yearTotals } = await getAllYearlyNetTotals(models);
+        const { years: allYears, totals: yearTotals } = await getAllYearlyNetTotals(models, req.user.realmId);
         const yearMatrix = percentageMatrix(yearTotals); // NxN
 
         // -----------------------------
@@ -624,7 +627,7 @@ exports.getFinancialReportHandler = async (req, res) => {
             const numericYear = parseInt(year);
             const numericMonth = parseInt(month);
 
-            weekTotals = await getWeeklyTotalsForMonth(numericYear, numericMonth, models);
+            weekTotals = await getWeeklyTotalsForMonth(numericYear, numericMonth, models, req.user.realmId);
             weekMatrix = percentageMatrixWeeks(weekTotals);
         }
 
@@ -725,13 +728,14 @@ exports.parsePeriod = (value, type) => {
     throw new Error("Invalid type");
 };
 
-exports.calculateMetrics = async (startDate, endDate, models) => {
+exports.calculateMetrics = async (startDate, endDate, models,realmId) => {
+    console.log("realmId:", realmId);
     const [inv, sr, cm, rr, cust] = await Promise.all([
-        getTotal(models.Invoice, startDate, endDate),
-        getTotal(models.SalesReceipt, startDate, endDate),
-        getTotal(models.CreditMemo, startDate, endDate),
-        getTotal(models.RefundReceipt, startDate, endDate),
-        getCustomerCount(models.Customer, startDate, endDate),
+        getTotal(models.Invoice, startDate, endDate,realmId),
+        getTotal(models.SalesReceipt, startDate, endDate,realmId),
+        getTotal(models.CreditMemo, startDate, endDate,realmId),
+        getTotal(models.RefundReceipt, startDate, endDate,realmId),
+        getCustomerCount(models.Customer, startDate, endDate,realmId),
     ]);
 
     const netRevenue = inv + sr - (cm + rr);

@@ -97,8 +97,8 @@ router.get("/compare-periods", authMiddleware, async (req, res) => {
         const p2 = revenueController.parsePeriod(period2, type);
 
         // Calculate metrics
-        const metrics1 = await revenueController.calculateMetrics(p1.start, p1.end, models);
-        const metrics2 = await revenueController.calculateMetrics(p2.start, p2.end, models);
+        const metrics1 = await revenueController.calculateMetrics(p1.start, p1.end, models,req.user.realmId);
+        const metrics2 = await revenueController.calculateMetrics(p2.start, p2.end, models,req.user.realmId);
 
         // Compute difference
         const comparison = {

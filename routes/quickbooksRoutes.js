@@ -103,4 +103,7 @@ router.get('/salesreceipt', authMiddleware, quickbookController.SalesReceipt);
 router.get('/refundreceipt', authMiddleware, quickbookController.RefundReceipt);
 router.get('/creditmemo', authMiddleware, quickbookController.CreditMemo);
 
+
+router.get('/disconnect', authMiddleware, quickbookController.disconnect);
+
 module.exports = router;

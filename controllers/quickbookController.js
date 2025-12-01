@@ -350,3 +350,36 @@ exports.CreditMemo = async (req, res) => {
     }
 };
 
+
+exports.disconnect = async (req, res) => {
+
+    try {
+        const userId = req.user.id  // logged-in user id
+
+         // ✅ Save in DB
+                // const user = await User.findById(userId);
+                const user = await User.findById(userId).select('-password');
+                if (!user) {
+                    throw new Error(`User with id ${userId} not found`);
+                }
+                user.accessToken_qb = null;
+                user.refreshToken_qb = null;
+                user.realmId = null;
+                user.accessToken_expires_at_qb = null; // Date object
+                user.refreshToken_expires_at_qb = null; // Date object
+                user.accessToken_created_at_qb =  null;
+                user.refreshToken_created_at_qb = null;
+                await user.save();
+                var flag = user.accessToken_qb && user.refreshToken_qb ? true : false;
+                const userData = {
+                    ...user._doc,  // for Mongoose user objects
+                    connection_flag: flag
+                };
+            return res.status(200).json({ message: 'Disconnected from QuickBooks', user: userData });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Failed to Disconnected from QuickBooks' });
+    }
+};
+

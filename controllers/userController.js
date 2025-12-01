@@ -54,12 +54,13 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
     const { email, password } = req.body;
     try {
-        const user = await User.findOne({ email });
+        var user = await User.findOne({ email });
         if (!user) return res.status(404).json({ message: 'User not found' });
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ message: 'Invalid password' });
         // role: user.role
+        user = await User.findOne({ email }).select('-accessToken_qb -refreshToken_qb -password');
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
         var flag = user.accessToken_qb && user.refreshToken_qb ? true : false;
         const userData = {
@@ -195,7 +196,7 @@ exports.deleteUser = async (req, res) => {
 // Get current user's profile
 exports.getCurrentUser = async (req, res) => {
     try {
-        const user = await User.findById(req.user.id).select('-password');
+        const user = await User.findById(req.user.id).select('-password -accessToken_qb -refreshToken_qb');
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
