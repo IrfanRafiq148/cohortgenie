@@ -201,6 +201,7 @@ exports.getCurrentUser = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
         var flag = user.accessToken_qb && user.refreshToken_qb ? true : false;
+        user = await User.findById(req.user.id).select('-password -accessToken_qb -refreshToken_qb');
         const userData = {
             ...user._doc,  // for Mongoose user objects
             connection_flag: flag
