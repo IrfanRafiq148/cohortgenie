@@ -37,7 +37,7 @@ router.get(
     //         ...req.user._doc,  // for Mongoose user objects
     //         connection_flag: flag
     //     };
-        res.redirect('http://localhost:3000/login?token=' + token + '&status=connected&connection_flag=' + flag);
+        res.redirect('http://24.199.101.185:3000/login?token=' + token + '&status=connected&connection_flag=' + flag);
     res.json({
       message: "Google login successful",
       user: userData,
