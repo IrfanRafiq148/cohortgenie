@@ -196,7 +196,7 @@ exports.deleteUser = async (req, res) => {
 // Get current user's profile
 exports.getCurrentUser = async (req, res) => {
     try {
-        var user = await User.findById(req.user.id).select('-password -accessToken_qb -refreshToken_qb');
+        var user = await User.findById(req.user.id).select('-password');
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
