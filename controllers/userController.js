@@ -65,7 +65,7 @@ exports.login = async (req, res) => {
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
         const userData = {
             ...user._doc,  // for Mongoose user objects
-            connection_flag: flag
+            connection_flag: flag  
         };
         // return (expiry - this.latency > Date.now());
         res.json({ token, user: userData });
