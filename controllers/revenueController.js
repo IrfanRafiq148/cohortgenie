@@ -341,10 +341,11 @@ const getAllYearlyNetTotals = async ({ Invoice, SalesReceipt, CreditMemo, Refund
 /**
  * Helper: Calculate financial summary for given period
  */
-const getFinancialSummary = async ({ month, quarter, year, type, models }, realmId) => {
+const getFinancialSummary = async ({ month, quarter, year, type, models,realmId }) => {
     const { startDate, endDate } = getDateRange({ month, quarter, year });
 
     // === Current Period Totals ===
+    console.log(startDate, endDate,realmId);
     const [
         invoiceTotal,
         salesReceiptTotal,
