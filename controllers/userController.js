@@ -64,7 +64,7 @@ exports.login = async (req, res) => {
         user = await User.findOne({ email }).select('-accessToken_qb -refreshToken_qb -password');
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
         const userData = {
-            ...user._doc,  // for Mongoose user object
+            ...user._doc,  // for Mongoose user objects
             connection_flag: flag
         };
         // return (expiry - this.latency > Date.now());
