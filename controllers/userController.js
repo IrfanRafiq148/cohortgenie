@@ -60,9 +60,9 @@ exports.login = async (req, res) => {
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ message: 'Invalid password' });
         // role: user.role
+        var flag = user.accessToken_qb && user.refreshToken_qb ? true : false;
         user = await User.findOne({ email }).select('-accessToken_qb -refreshToken_qb -password');
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
-        var flag = user.accessToken_qb && user.refreshToken_qb ? true : false;
         const userData = {
             ...user._doc,  // for Mongoose user objects
             connection_flag: flag
