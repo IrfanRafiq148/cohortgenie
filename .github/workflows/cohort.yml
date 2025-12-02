@@ -15,9 +15,9 @@ jobs:
       - name: Deploy to server
         uses: appleboy/ssh-action@v0.1.9
         with:
-          host: ${{ secrets.24.199.101.185 }}
+          host: ${{ secrets.SECRET_SERVER_IP }}
           username: root
-          password: ${{ secrets.Digital@123OCEANN*N }}
+          password: ${{ secrets.SECRET_SERVER_PASSWORD }}
           port: 22
           script: |
             cd /var/www/cohortgenie-BE
