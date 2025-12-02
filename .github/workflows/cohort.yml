@@ -1,0 +1,26 @@
+name: Deploy Node.js app
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v0.1.9
+        with:
+          host: ${{ secrets.24.199.101.185 }}
+          username: root
+          password: ${{ secrets.Digital@123OCEANN*N }}
+          port: 22
+          script: |
+            cd /var/www/cohortgenie-BE
+            git pull
+            npm install
+            pm2 restart myapp
