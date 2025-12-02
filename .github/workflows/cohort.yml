@@ -23,4 +23,4 @@ jobs:
             cd /var/www/cohortgenie-BE
             git pull
             npm install
-            pm2 restart myapp
+            pm2 restart cohortgenie-BE
