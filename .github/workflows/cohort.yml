@@ -22,5 +22,5 @@ jobs:
           script: |
             cd /var/www/cohortgenie-BE
             git pull
-            npm install
+            npm i
             pm2 restart cohortgenie-BE
