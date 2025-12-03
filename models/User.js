@@ -4,7 +4,6 @@ const userSchema = new mongoose.Schema({
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String },
-    avatar: String,
     // role: { type: String, enum: ['admin','user'], default: 'user' },
     resetPasswordToken: String,
     resetPasswordExpires: Date,
@@ -17,7 +16,12 @@ const userSchema = new mongoose.Schema({
     refreshToken_created_at_qb: Date,
     last_sync: Date,
     googleId: String,       // for google login
-    avatar: String
+    avatar: String,
+    stripeCustomerId: { type: String },
+    stripeSubscriptionId: { type: String },
+    subscriptionStatus: { type: String, enum: ['trialing','active','canceled'], default: 'trialing' },
+    expires_at: { type: Date },
+    subscription_Amount: { type: Number, default: 0 },
 
 }, { timestamps: true });
 
