@@ -54,7 +54,7 @@ router.post('/create-subscription', async (req, res) => {
 
 router.get("/billing/plans", billingController.getBillingPlans);
 router.post("/billing/update-member",authMiddleware, billingController.updateMember);
-router.get("/manage-subscription", authMiddleware, billingController.manageSubscription);
+router.get("/billing/manage-subscription", authMiddleware, billingController.manageSubscription);
 
 router.post("/billing/add-subscription", billingController.addSubscription);
 
