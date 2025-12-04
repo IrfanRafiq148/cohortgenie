@@ -17,10 +17,14 @@ const userSchema = new mongoose.Schema({
     last_sync: Date,
     googleId: String,       // for google login
     avatar: String,
-    stripeCustomerId: { type: String },
-    stripeSubscriptionId: { type: String },
-    subscriptionStatus: { type: String, enum: ['trialing','active','canceled'], default: 'trialing' },
-    expires_at: { type: Date },
+    stripeCustomerId: { type: String, default: null },
+    stripeSubscriptionId: { type: String, default: null },
+    subscriptionStatus: { 
+        type: String, 
+        enum: ['trialing','active','canceled'],
+        default: 'trialing'
+    },
+    expires_at: { type: Date, default: null },
     subscription_Amount: { type: Number, default: 0 },
 
 }, { timestamps: true });
