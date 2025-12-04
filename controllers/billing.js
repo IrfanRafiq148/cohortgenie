@@ -78,10 +78,13 @@ exports.updateMember = async (req, res) => {
       updateData
     );
 
-    return res.json({
-      success: true,
-      sub_id: session.customer
-    });
+    var flag = user.accessToken_qb && user.refreshToken_qb ? true : false;
+    user = await User.findById(req.user.id).select('-password -accessToken_qb -refreshToken_qb');
+    const userData = {
+    ...user._doc,  // for Mongoose user objects
+    connection_flag: flag
+    };
+    return res.status(200).json({ user: userData });
 
   } catch (error) {
     return res.status(500).json({
