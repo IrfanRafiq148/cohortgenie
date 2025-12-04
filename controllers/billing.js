@@ -116,6 +116,30 @@ exports.manageSubscription = async (req, res) => {
     });
   }
 };
+exports.cancel_Subscription = async (req, res) => {
+  console.log("manageSubscription called", req, res);
+/*************  ✨ Windsurf Command ⭐  *************/
+    try {
+        const mailOptions = {
+            from: `"${process.env.SMTP_FROM_NAME}" <${process.env.SMTP_FROM_EMAIL}>`,
+            to: member.email,
+            subject: 'Your Subscription Status',
+            html: `
+                <h1>Your Subscription Status</h1>
+                <p>Hello ${member.name},</p>
+                <p>Your current subscription status is: ${member.subscriptionStatus}</p>
+                <p>Your subscription will expire on: ${new Date(member.expires_at).toLocaleString()}</p>
+                <p>Your subscription amount is: ${member.subscription_Amount}</p>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+    } catch (error) {
+        console.error('Email sending failed:', error);
+        throw new Error('Failed to send subscription status email');
+    }
+/*******  8d9d122c-6218-4d9a-af85-8c5cc75d378e  *******/  
+};
 
 async function getSubscriptionDetails(subscriptionId) {
     try {
@@ -126,5 +150,6 @@ async function getSubscriptionDetails(subscriptionId) {
         throw error;
     }
 }
+
 
 // module.exports = { getSubscriptionDetails };

@@ -52,10 +52,11 @@ router.post('/create-subscription', async (req, res) => {
   }
 });
 
-router.get("/billing/plans", billingController.getBillingPlans);
+router.get("/billing/plans",authMiddleware, billingController.getBillingPlans);
 router.post("/billing/update-member",authMiddleware, billingController.updateMember);
 router.get("/billing/manage-subscription", authMiddleware, billingController.manageSubscription);
 
 router.post("/billing/add-subscription", billingController.addSubscription);
+router.post("/billing/cancel-subscription", billingController.cancel_Subscription);
 
 module.exports = router;
