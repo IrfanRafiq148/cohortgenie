@@ -27,8 +27,8 @@ exports.addSubscription = async (req, res) => {
     const { plan } = req.body; // same as $request['plan']
 
     const session = await stripe.checkout.sessions.create({
-      success_url: 'http://localhost:3000/updateprofile?session_id={CHECKOUT_SESSION_ID}',
-      cancel_url: 'http://localhost:3000/billing',
+      success_url: 'http://24.199.101.185/dashboard/billing?session_id={CHECKOUT_SESSION_ID}',
+      cancel_url: 'http://24.199.101.185/dashboard/billing',
       mode: 'subscription',
       line_items: [
         {
@@ -37,6 +37,7 @@ exports.addSubscription = async (req, res) => {
         }
       ]
     });
+    return res.redirect(session.url);
 
     return res.json({
       success: true,
