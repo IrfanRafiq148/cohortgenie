@@ -126,10 +126,7 @@ exports.cancel_Subscription = async (req, res) => {
             subject: 'Your Subscription Status',
             html: `
                 <h1>Your Subscription Status</h1>
-                <p>Hello ${member.name},</p>
-                <p>Your current subscription status is: ${member.subscriptionStatus}</p>
-                <p>Your subscription will expire on: ${new Date(member.expires_at).toLocaleString()}</p>
-                <p>Your subscription amount is: ${member.subscription_Amount}</p>
+                <p>Hello ${req},</p>
             `
         };
 
