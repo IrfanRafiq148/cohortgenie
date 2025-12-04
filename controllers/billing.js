@@ -122,7 +122,7 @@ exports.cancel_Subscription = async (req, res) => {
     try {
         const mailOptions = {
             from: `"${process.env.SMTP_FROM_NAME}" <${process.env.SMTP_FROM_EMAIL}>`,
-            to: member.email,
+            to: "irfan1481999@gmail.com",
             subject: 'Your Subscription Status',
             html: `
                 <h1>Your Subscription Status</h1>
