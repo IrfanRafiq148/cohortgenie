@@ -9,7 +9,6 @@ const revenueRoutes = require('./routes/revenueRoutes');
 const passport = require("./config/passport");
 const connectDB = require('./config/db');
 const subscriptionRoutes = require('./routes/subscription');
-const webhookRoutes = require('./routes/webhook');
 
 const app = express();
 
@@ -24,7 +23,6 @@ app.use(cors({
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true
 }));
-app.post('/api/webhook', express.raw({ type: 'application/json' }), webhookRoutes);
 
 
 app.use(cors());
@@ -39,7 +37,6 @@ app.use('/api/quickbooks/', quickbooksRoutes);
 app.use('/api/revenue/', revenueRoutes);
 app.use("/auth", require("./routes/auth"));
 app.use('/api/subscription', subscriptionRoutes);
-app.use('/api/webhook', webhookRoutes)
 
 
 // Connect to MongoDB
