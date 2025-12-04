@@ -77,7 +77,7 @@ exports.updateMember = async (req, res) => {
       { _id: req.user.id },  // same as Auth::id()
       updateData
     );
-
+    var user = await User.findById(req.user.id).select('-password');
     var flag = user.accessToken_qb && user.refreshToken_qb ? true : false;
     user = await User.findById(req.user.id).select('-password -accessToken_qb -refreshToken_qb');
     const userData = {
