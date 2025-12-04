@@ -57,6 +57,8 @@ router.post("/billing/update-member",authMiddleware, billingController.updateMem
 router.get("/billing/manage-subscription", authMiddleware, billingController.manageSubscription);
 
 router.post("/billing/add-subscription", billingController.addSubscription);
-router.post("/billing/cancel-subscription", billingController.cancel_Subscription);
+
+router.post("/billing/cancel-subscription",express.raw({ type: "application/json" }),billingController.stripeWebhook);
+
 
 module.exports = router;

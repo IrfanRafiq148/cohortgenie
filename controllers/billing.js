@@ -116,27 +116,48 @@ exports.manageSubscription = async (req, res) => {
     });
   }
 };
-exports.cancel_Subscription = async (req, res) => {
-  console.log("manageSubscription called", req, res);
-/*************  ✨ Windsurf Command ⭐  *************/
-    try {
-        const mailOptions = {
-            from: `"${process.env.SMTP_FROM_NAME}" <${process.env.SMTP_FROM_EMAIL}>`,
-            to: "irfan1481999@gmail.com",
-            subject: 'Your Subscription Status',
-            html: `
-                <h1>Your Subscription Status</h1>
-                <p>Hello ${req},</p>
-            `
-        };
+// cancel webhook only
+exports.stripeWebhook = async (req, res) => {
+  const stripe = require("stripe")(process.env.STRIPE_SECRET);
+  const signature = req.headers["stripe-signature"];
 
-        await transporter.sendMail(mailOptions);
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(
+      req.body, 
+      signature, 
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
+  } catch (err) {
+    console.log("Webhook signature failed:", err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  // get event data
+  const data = event.data.object;
+
+  // --------------------------------------------
+  // ONLY HANDLE SUBSCRIPTION CANCELLATION
+  // --------------------------------------------
+  if (event.type === "customer.subscription.deleted") {
+    try {
+      await User.findOneAndUpdate(
+        { stripeCustomerId: data.customer },
+        {
+          subscriptionStatus: "canceled",
+          expires_at: new Date(data.current_period_end * 1000),
+        }
+      );
+
+      console.log("🔴 Subscription canceled for customer:", data.customer);
     } catch (error) {
-        console.error('Email sending failed:', error);
-        throw new Error('Failed to send subscription status email');
+      console.error("DB update error:", error);
     }
-/*******  8d9d122c-6218-4d9a-af85-8c5cc75d378e  *******/  
+  }
+
+  res.json({ received: true });
 };
+
 
 async function getSubscriptionDetails(subscriptionId) {
     try {
