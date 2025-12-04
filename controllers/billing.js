@@ -101,12 +101,12 @@ exports.manageSubscription = async (req, res) => {
     // Create Billing Portal session
     const session = await stripe.billingPortal.sessions.create({
       customer: member.stripeCustomerId,
-      return_url: 'http://localhost:3000/dashboard',
+      return_url: 'http://24.199.101.185/dashboard/billing',
     });
 
     return res.json({
       success: true,
-      session
+      session: session.url
     });
 
   } catch (error) {
