@@ -37,11 +37,10 @@ exports.addSubscription = async (req, res) => {
         }
       ]
     });
-    return res.redirect(session.url);
 
     return res.json({
       success: true,
-      session: session
+      session: session.url
     });
 
   } catch (error) {
